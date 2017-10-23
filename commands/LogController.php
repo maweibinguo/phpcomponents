@@ -10,18 +10,35 @@ namespace app\commands;
 use yii\console\Controller;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
+use Monolog\Processor\WebProcessor;
 
 class LogController extends Controller 
 {
     
     public function actionLog()
     {
-        // create a log channel
-        $log = new Logger('name');
-        $log->pushHandler(new StreamHandler('/tmp/log/', Logger::WARNING));
+        $log = new Logger('apple');
 
-        // add records to the log
-        $log->warning('Foo');
-        $log->error('Bar'); 
+        //为该channel添加回调处理数据
+        $web_processor = new WebProcessor();
+        $log->pushProcessor($web_processor);
+        
+        //创建streamhandler
+        $log_name = date('Y-m-d') . '.log';
+        $log_path = dirname(__DIR__) . '/runtime/log/' . $log_name;
+        $streamHandler = new StreamHandler($log_path, Logger::NOTICE);
+
+        //只为steamhandler添加回调处理数据
+        $streamHandler->pushProcessor(function($record){
+            $record['extra'] = [ 'source_from' => 'stream_handler' ];
+            return $record;
+        });
+
+        //将streamhandler添加到channel对应stack中
+        $log->pushHandler($streamHandler);
+
+        //如果没有手动添加handler的话，StreamHandler('php://stderr', static::DEBUG)
+        $log->alert("monolog", ["processer part"]);
     }
 }
