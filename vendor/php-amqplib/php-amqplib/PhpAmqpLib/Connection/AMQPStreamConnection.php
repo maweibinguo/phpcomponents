@@ -26,7 +26,7 @@ class AMQPStreamConnection extends AbstractConnection
         $port,
         $user,
         $password,
-        $TeXvhost = '/',
+        $vhost = '/',
         $insist = false,
         $login_method = 'AMQPLAIN',
         $login_response = null,
