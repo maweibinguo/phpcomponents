@@ -61,8 +61,14 @@ class MqController extends Controller
 
         //发送确认消息
         //没有ack的话, 会由unacked 变为ready状态，再次执行
+        
         //如果该消息一直执行不成功的话，是否会阻塞后面的消息呢?答案是不会阻塞
-        //其实每一个消息都不应该无限次的被执行，我们最好做成可配置的，最多执行
+
+        //其实每一个消息都不应该无限次的被执行，我们最好做成可配置的，最多执行多少次,超过该次数后就要丢弃该消息,同时保存执行失败的消息(最好发送短信或者邮件进行通知)
+        //对于执行失败的数据我们就要手动补发了
+        //============= 上面会引出两个问题 1、如何确认唯一的一条消息为他计数 2、如何超过一定的次数就不再执行该消息了
+
+        //忘记消息确认的话，会引起另外一个问题，造成大量的消息拥挤在内存中
         if($message->body == 'test') {
             $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
         }
@@ -145,4 +151,6 @@ class MqController extends Controller
         //never excuted
         echo '++++++++++++++++++++';
     }
+
+
 }
