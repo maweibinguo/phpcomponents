@@ -73,7 +73,7 @@ class WebProcessor
     {
         // skip processing if for some reason request data
         // is not present (CLI or wonky SAPIs)
-        if (!isset($this->serverData['REQUEST_URI'])) {
+        if (!isset($this->serverData['PHP_SELF'])) {
             return $record;
         }
 
