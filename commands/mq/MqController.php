@@ -135,6 +135,8 @@ class MqController extends Controller
       * 正常情况下，走到回调函数的时候，将会从队列中删除该消息，此时不可保证业务完整执行完了
       * 我们需要基于业务，手动确认该消息
       * basic_consume 第四个参数为是否自动确认，true自动确认、false手动确认
+      *
+      * 不是所有的业务都要执行手动确认的，前提是保证消费端数据的一致性，如果没有办法进行回滚的话，多次发消息是有问题的
       */
     public function actionTwoGet()
     {
@@ -153,5 +155,9 @@ class MqController extends Controller
         echo '++++++++++++++++++++';
     }
 
-
+    /**
+     ************************************************
+     * direct nameless exchange
+     ************************************************
+     */
 }
