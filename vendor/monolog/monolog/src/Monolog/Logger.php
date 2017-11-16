@@ -138,6 +138,10 @@ class Logger implements LoggerInterface
      * @param HandlerInterface[] $handlers   Optional stack of handlers, the first one in the array is called first, etc.
      * @param callable[]         $processors Optional array of processors
      */
+    /**
+     * 在php中会对传递的参数尝试进行类型转换，转换不了再报错
+     * 我们没有必要再对入参进行类型的校验
+     */
     public function __construct($name, array $handlers = array(), array $processors = array())
     {
         $this->name = $name;
@@ -157,6 +161,9 @@ class Logger implements LoggerInterface
      * Return a new cloned instance with the name changed
      *
      * @return static
+     */
+    /**
+     * 这个方法名字起得很写意啊
      */
     public function withName($name)
     {
@@ -183,6 +190,10 @@ class Logger implements LoggerInterface
      * Pops a handler from the stack
      *
      * @return HandlerInterface
+     */
+    /**
+     * 为了保证返回的必须是HandlerInterface对象
+     * 不能对空数组进行pop
      */
     public function popHandler()
     {
@@ -225,13 +236,15 @@ class Logger implements LoggerInterface
      * @param  callable $callback
      * @return $this
      */
+    /**
+     * var_export 似乎和var_dump差不多，区别在于var_export可以通过设置true参数返回变量的字符串信息，而不是直接输出
+     */
     public function pushProcessor($callback)
     {
         if (!is_callable($callback)) {
             throw new \InvalidArgumentException('Processors must be valid callables (callback or object with an __invoke method), '.var_export($callback, true).' given');
         }
         array_unshift($this->processors, $callback);
-
         return $this;
     }
 
@@ -288,7 +301,6 @@ class Logger implements LoggerInterface
         if (!$this->handlers) {
             $this->pushHandler(new StreamHandler('php://stderr', static::DEBUG));
         }
-
         $levelName = static::getLevelName($level);
 
         // check if any handler will handle this message so we can return early and save cycles
@@ -299,10 +311,8 @@ class Logger implements LoggerInterface
                 $handlerKey = key($this->handlers);
                 break;
             }
-
             next($this->handlers);
         }
-
         if (null === $handlerKey) {
             return false;
         }
@@ -333,6 +343,7 @@ class Logger implements LoggerInterface
         }
 
         while ($handler = current($this->handlers)) {
+            //如果此时设置了bubble == false的话，那么就不会交给下一个handler进行处理
             if (true === $handler->handle($record)) {
                 break;
             }
@@ -469,6 +480,9 @@ class Logger implements LoggerInterface
      *
      * @param string|int Level number (monolog) or name (PSR-3)
      * @return int
+     */
+    /**
+     * defined 和 constant接受参数的形式都是字符串，用来校验常量是否存在、获取常量值
      */
     public static function toMonologLevel($level)
     {

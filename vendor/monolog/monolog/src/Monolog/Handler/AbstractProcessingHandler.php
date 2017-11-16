@@ -31,7 +31,6 @@ abstract class AbstractProcessingHandler extends AbstractHandler
         }
 
         $record = $this->processRecord($record);
-
         $record['formatted'] = $this->getFormatter()->format($record);
 
         $this->write($record);
