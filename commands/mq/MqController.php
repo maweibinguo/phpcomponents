@@ -46,6 +46,7 @@ class MqController extends Controller
         echo " [x] Received ", $message->body, "\n";
     }
 
+
     /**
      * 列子2消息的回掉函数
      */
