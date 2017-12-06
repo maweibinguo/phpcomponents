@@ -4,7 +4,9 @@
  */
 namespace app\components;
 
-class RedisLock extends \Redis
+use yii\redis\Connection;
+
+class RedisLock extends Connection
 {
 
     private $lockedNames = [];
@@ -92,7 +94,7 @@ class RedisLock extends \Redis
         if ($this->isLocking($name)) {
 
             //删除锁
-            if ($this->delete("Lock:$name")) {
+            if ($this->del("Lock:$name")) {
 
                 //清掉lockedNames里的锁标志
                 unset($this->lockedNames[$name]);
