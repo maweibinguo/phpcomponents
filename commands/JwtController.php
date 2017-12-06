@@ -11,10 +11,5 @@ use yii\console\Controller;
 
 class JwtController extends Controller 
 {
-    /**
-     * 错误认知1、
-     * jwt的encode似乎只是做签名用的，主要是为了防止数据被篡改，
-     * 但是并不能保证信息不被泄露，只要对head和payload进行base64_decode就可以获取相关的信息
-     */
 
 }

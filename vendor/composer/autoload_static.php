@@ -55,6 +55,7 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         array (
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
+            'Predis\\' => 7,
             'PhpAmqpLib\\' => 11,
         ),
         'M' => 
@@ -64,6 +65,8 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         'G' => 
         array (
             'GuzzleHttp\\Psr7\\' => 16,
+            'Geohash\\Tests\\' => 14,
+            'Geohash\\' => 8,
         ),
         'F' => 
         array (
@@ -176,6 +179,10 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         array (
             0 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
+        'Predis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/predis/predis/src',
+        ),
         'PhpAmqpLib\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-amqplib/php-amqplib/PhpAmqpLib',
@@ -187,6 +194,14 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         'GuzzleHttp\\Psr7\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
+        'Geohash\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/geohash/geohash/tests',
+        ),
+        'Geohash\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/geohash/geohash/src',
         ),
         'Faker\\' => 
         array (

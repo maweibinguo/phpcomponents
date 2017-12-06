@@ -19,20 +19,12 @@ class ComposerAutoloaderInite469f1b079fb25ed3e6da79a201320c4
             return self::$loader;
         }
 
-        //注册自动加载函数
         spl_autoload_register(array('ComposerAutoloaderInite469f1b079fb25ed3e6da79a201320c4', 'loadClassLoader'), true, true);
-
-        //实例化classLoader类
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
-
-        //清空自动加载函数队列
         spl_autoload_unregister(array('ComposerAutoloaderInite469f1b079fb25ed3e6da79a201320c4', 'loadClassLoader'));
 
-        //php版本大于5.6, zend_loader_file_encoded 干毛用的？
         $useStaticLoader = PHP_VERSION_ID >= 50600 && !defined('HHVM_VERSION') && (!function_exists('zend_loader_file_encoded') || !zend_loader_file_encoded());
         if ($useStaticLoader) {
-
-            //引入ComposerStaticInite469f1b079fb25ed3e6da79a201320c4 类
             require_once __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInite469f1b079fb25ed3e6da79a201320c4::getInitializer($loader));

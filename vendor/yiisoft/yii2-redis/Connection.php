@@ -519,15 +519,25 @@ class Connection extends Component
         if ($this->_socket !== false) {
             return;
         }
+
+        //connection = 127.0.0.1:6379, database=0
         $connection = ($this->unixSocket ?: $this->hostname . ':' . $this->port) . ', database=' . $this->database;
         \Yii::trace('Opening redis DB connection: ' . $connection, __METHOD__);
         $this->_socket = @stream_socket_client(
-            $this->unixSocket ? 'unix://' . $this->unixSocket : 'tcp://' . $this->hostname . ':' . $this->port,
+            $socket_con = $this->unixSocket ? 'unix://' . $this->unixSocket : 'tcp://' . $this->hostname . ':' . $this->port,
             $errorNumber,
             $errorDescription,
-            $this->connectionTimeout ? $this->connectionTimeout : ini_get('default_socket_timeout'),
+            $timeout = $this->connectionTimeout ? $this->connectionTimeout : ini_get('default_socket_timeout'),
             $this->socketClientFlags
         );
+
+        /**
+         * socket_con = string(20) "tcp://127.0.0.1:6379"
+         * errorNumber = int(0)
+         * errorDescription = string(0) ""
+         * timeout = string(2) "60"
+         * $this->socketClientFlags = int(4)
+         */        
         if ($this->_socket) {
             if ($this->dataTimeout !== null) {
                 stream_set_timeout($this->_socket, $timeout = (int) $this->dataTimeout, (int) (($this->dataTimeout - $timeout) * 1000000));

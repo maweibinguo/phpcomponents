@@ -377,9 +377,6 @@ class Container extends Component
         if (!empty($dependencies) && $reflection->implementsInterface('yii\base\Configurable')) {
             // set $config as the last parameter (existing one will be overwritten)
             $dependencies[count($dependencies) - 1] = $config;
-            if($class == 'yii\redis\Connection') {
-                var_dump($reflection->newInstanceArgs($dependencies));die();
-            }
             return $reflection->newInstanceArgs($dependencies);
         } else {
             $object = $reflection->newInstanceArgs($dependencies);
