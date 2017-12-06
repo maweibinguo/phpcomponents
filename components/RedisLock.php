@@ -95,12 +95,10 @@ class RedisLock extends Connection
 
             //删除锁
             if ($this->del("Lock:$name")) {
-
                 //清掉lockedNames里的锁标志
                 unset($this->lockedNames[$name]);
 
                 return true;
-
             }
 
         }
