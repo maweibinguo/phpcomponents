@@ -88,4 +88,9 @@ class RabbitMqoneController extends Controller
             file_put_contents('/tmp/urllist.txt', $target_url."\r\n", FILE_APPEND);
         }
     }
+    
+    public function actionTest()
+    {
+    
+    }
 }
