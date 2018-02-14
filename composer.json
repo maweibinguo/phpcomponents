@@ -22,7 +22,9 @@
         "monolog/monolog": "^1.23",
         "yiisoft/yii2-redis": "^2.0",
         "predis/predis": "^1.1",
-        "geohash/geohash": "^1.0"
+        "geohash/geohash": "^1.0",
+        "vlucas/valitron": "^1.4",
+        "symfony/cache": "^3.4"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",
