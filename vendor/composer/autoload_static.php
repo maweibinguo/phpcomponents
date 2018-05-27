@@ -44,6 +44,10 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         array (
             'Webmozart\\Assert\\' => 17,
         ),
+        'U' => 
+        array (
+            'Urlcrypt\\' => 9,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Mbstring\\' => 26,
@@ -71,6 +75,7 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Cache\\' => 10,
             'Predis\\' => 7,
+            'PhpOffice\\PhpSpreadsheet\\' => 25,
             'PhpAmqpLib\\' => 11,
             'Pheanstalk\\' => 11,
         ),
@@ -152,6 +157,10 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
         ),
+        'Urlcrypt\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/aarondfrancis/urlcrypt/lib',
+        ),
         'Symfony\\Polyfill\\Mbstring\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
@@ -227,6 +236,10 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         'Predis\\' => 
         array (
             0 => __DIR__ . '/..' . '/predis/predis/src',
+        ),
+        'PhpOffice\\PhpSpreadsheet\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
         ),
         'PhpAmqpLib\\' => 
         array (
@@ -306,6 +319,10 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
             array (
                 0 => __DIR__ . '/..' . '/phpspec/php-diff/lib',
             ),
+            'Detection' => 
+            array (
+                0 => __DIR__ . '/..' . '/mobiledetect/mobiledetectlib/namespaced',
+            ),
         ),
         'C' => 
         array (
@@ -327,6 +344,7 @@ class ComposerStaticInite469f1b079fb25ed3e6da79a201320c4
         'File_Iterator' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Iterator.php',
         'File_Iterator_Facade' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Facade.php',
         'File_Iterator_Factory' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Factory.php',
+        'Mobile_Detect' => __DIR__ . '/..' . '/mobiledetect/mobiledetectlib/Mobile_Detect.php',
         'PHPUnit\\Framework\\Assert' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/Assert.php',
         'PHPUnit\\Framework\\AssertionFailedError' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/AssertionFailedError.php',
         'PHPUnit\\Framework\\BaseTestListener' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/BaseTestListener.php',

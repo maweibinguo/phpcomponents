@@ -32,7 +32,7 @@ abstract class AbstractProcessingHandler extends AbstractHandler
 
         $record = $this->processRecord($record);
         $record['formatted'] = $this->getFormatter()->format($record);
-
+var_dump($record);die();
         $this->write($record);
 
         return false === $this->bubble;
