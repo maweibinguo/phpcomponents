@@ -11,5 +11,8 @@ use yii\console\Controller;
 
 class JwtController extends Controller 
 {
-
+    public function actionMe()
+    {
+        echo 'sdf';die();
+    }
 }
