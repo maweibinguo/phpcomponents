@@ -26,4 +26,12 @@ class ClientController extends Controller
         echo $response . PHP_EOL;
         $this->client->close();
     }
+
+    public function actionBuffer()
+    {
+        for($i=0; $i<=2; $i++) {
+            $this->client->send("Just a test.\n");
+        }
+        $this->client->close();
+    }
 }

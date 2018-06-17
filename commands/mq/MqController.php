@@ -13,7 +13,7 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 class MqController extends Controller 
 {
     /**
-     * tpc 链接
+     * 链接
      */
     public static $connection;
 
@@ -23,17 +23,26 @@ class MqController extends Controller
     public static $channel;
 
     /**
+     * 重试链接次数
+     */
+    public static $max_retry_times = 3;
+
+    /**
      * 获取rabbitmq服务实例
      */
     public function init()
     {
         if(!is_object(static::$connection)) {
-            $rabbitmq_config = \Yii::$app->params['rabbitMq'];
-            static::$connection= new AMQPStreamConnection( $rabbitmq_config['host'], 
-                                                    $rabbitmq_config['port'],
-                                                    $rabbitmq_config['user'],
-                                                    $rabbitmq_config['password']   );
-            static::$channel = static::$connection->channel();
+            try{
+                $rabbitmq_config = \Yii::$app->params['rabbitMq'];
+                static::$connection= new AMQPStreamConnection( $rabbitmq_config['host'],
+                    $rabbitmq_config['port'],
+                    $rabbitmq_config['user'],
+                    $rabbitmq_config['password']   );
+                static::$channel = static::$connection->channel();
+            } catch (\Exception $e) {
+                var_dump($e->getMessage());die();
+            }
         }
     }
 

@@ -576,7 +576,7 @@ class AbstractConnection extends AbstractChannel
                     return array($frame_type, $payload);
                 }
 
-                // Not the channel we were looking for.  Queue this frame
+                // Not the channel we were looking for.  QueueFactory this frame
                 //for later, when the other channel is looking for frames.
                 // Make sure the channel still exists, it could have been
                 // closed by a previous Exception.

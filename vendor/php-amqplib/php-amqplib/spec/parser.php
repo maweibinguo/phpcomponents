@@ -3,13 +3,13 @@
 /**
  * Usage:
  * php spec/parser.php path.to.spec.json:
- *   - php spec/parser.php amqp-rabbitmq-0.8.json
- *   - php spec/parser.php amqp-rabbitmq-0.9.1.json
+ *   - php spec/parser.php amqp-mq-0.8.json
+ *   - php spec/parser.php amqp-mq-0.9.1.json
  */
 
 if (empty($argv[1])) {
     echo "ERROR: You must provide a protocol file to parse.\n";
-    echo "Usage: php spec/parser.php amqp-rabbitmq-0.9.1.json.\n";
+    echo "Usage: php spec/parser.php amqp-mq-0.9.1.json.\n";
     die(1);
 }
 

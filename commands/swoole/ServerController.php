@@ -58,7 +58,7 @@ class ServerController extends Controller
          * $fromId 来自那个worker进程的id
          * $data 要投递的任务数据
          */
-        $this->server->on('Task',function($serv, $taskId, $fromId, $data){
+        $this->server->on('TaskFactory',function($serv, $taskId, $fromId, $data){
             echo "task start. --- from worker id: {$fromId}." . PHP_EOL; 
             for ($i=0; $i < 5; $i++) { 
                 sleep(1);
@@ -109,7 +109,7 @@ class ServerController extends Controller
          * $fromId 来自那个worker进程的id
          * $data 要投递的任务数据
          */
-        $this->server->on('Task',function($serv, $taskId, $fromId, $data){
+        $this->server->on('TaskFactory',function($serv, $taskId, $fromId, $data){
             echo "task start. --- from worker id: {$fromId}." . PHP_EOL; 
             for ($i=0; $i < 5; $i++) { 
                 sleep(1);
@@ -146,6 +146,17 @@ class ServerController extends Controller
         });
 
         //这个地方进行了阻塞
+        $this->server->start();
+    }
+
+    /**
+     * 粘包问题
+     */
+    public function actionBuffer()
+    {
+        $this->server->on('Receive', function($server, $fd, $from_id , $data){
+            echo "Server received data {$data}" . PHP_EOL;  
+        });
         $this->server->start();
     }
 }

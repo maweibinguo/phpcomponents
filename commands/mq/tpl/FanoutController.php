@@ -1,4 +1,5 @@
 <?php
+
 namespace app\commands\mq;
 
 use PhpAmqpLib\Message\AMQPMessage;
@@ -14,8 +15,8 @@ class FanoutController extends MqController
     /**
      * 广播交换机
      *
-     * 我们将消息广播到所有绑定的队列上 
-     */  
+     * 我们将消息广播到所有绑定的队列上
+     */
     public function actionFanoutSend()
     {
         //声明直连交换机
@@ -47,8 +48,8 @@ class FanoutController extends MqController
             'fanout_queue_two',
             'fanout_queue_three'
         ];
-        foreach($queue_name_list as $queue_name) {
-            static::$channel->queue_declare($queue_name, false, $is_durable = false, false, false);
+        foreach ($queue_name_list as $queue_name) {
+            static::$channel->queue_declare($queue_name, false, $isdurable = false, false, false);
 
             //绑定队列与交换机
             static::$channel->queue_bind($queue_name, $exchange = $this->exchange_name);
@@ -58,7 +59,7 @@ class FanoutController extends MqController
         }
 
         //callbacks is block
-        while(count(static::$channel->callbacks)) {
+        while (count(static::$channel->callbacks)) {
             static::$channel->wait();
         }
     }

@@ -4,7 +4,7 @@
  * This file is part of SwiftMailer.
  * (c) 2004-2009 Chris Corbyn
  *
- * This authentication is for Exchange servers. We support version 1 & 2.
+ * This authentication is for ExchangeFactory servers. We support version 1 & 2.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.

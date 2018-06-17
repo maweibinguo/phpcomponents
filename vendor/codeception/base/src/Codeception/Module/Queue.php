@@ -10,7 +10,7 @@ use Codeception\Lib\Driver\Iron;
 
 /**
  *
- * Works with Queue servers.
+ * Works with QueueFactory servers.
  *
  * Testing with a selection of remote/local queueing services, including Amazon's SQS service
  * Iron.io service and beanstalkd service.
@@ -72,9 +72,9 @@ use Codeception\Lib\Driver\Iron;
  * #### Example (beanstalkd)
  *
  *     modules:
- *        enabled: [Queue]
+ *        enabled: [QueueFactory]
  *        config:
- *           Queue:
+ *           QueueFactory:
  *              type: 'beanstalkd'
  *              host: '127.0.0.1'
  *              port: 11300
@@ -83,9 +83,9 @@ use Codeception\Lib\Driver\Iron;
  * #### Example (Iron.io)
  *
  *     modules:
- *        enabled: [Queue]
+ *        enabled: [QueueFactory]
  *        config:
- *           Queue:
+ *           QueueFactory:
  *              'type' => 'iron',
  *              'host' => 'mq-aws-us-east-1.iron.io',
  *              'token' => 'your-token',
@@ -94,9 +94,9 @@ use Codeception\Lib\Driver\Iron;
  * #### Example (AWS SQS)
  *
  *     modules:
- *        enabled: [Queue]
+ *        enabled: [QueueFactory]
  *        config:
- *           Queue:
+ *           QueueFactory:
  *              'type' => 'aws',
  *              'key' => 'your-public-key',
  *              'secret' => 'your-secret-key',
@@ -105,9 +105,9 @@ use Codeception\Lib\Driver\Iron;
  * #### Example AWS SQS using profile credentials
  *
  *     modules:
- *        enabled: [Queue]
+ *        enabled: [QueueFactory]
  *        config:
- *           Queue:
+ *           QueueFactory:
  *              'type' => 'aws',
  *              'profile' => 'project1', //see documentation
  *              'region' => 'us-west-2'
@@ -115,9 +115,9 @@ use Codeception\Lib\Driver\Iron;
  * #### Example AWS SQS running on Amazon EC2 instance
  *
  *     modules:
- *        enabled: [Queue]
+ *        enabled: [QueueFactory]
  *        config:
- *           Queue:
+ *           QueueFactory:
  *              'type' => 'aws',
  *              'region' => 'us-west-2'
  *
@@ -187,7 +187,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function seeQueueExists($queue)
     {
@@ -203,7 +203,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function dontSeeQueueExists($queue)
     {
@@ -219,7 +219,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function seeEmptyQueue($queue)
     {
@@ -235,7 +235,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function dontSeeEmptyQueue($queue)
     {
@@ -251,7 +251,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      * @param int $expected Number of messages expected
      */
     public function seeQueueHasCurrentCount($queue, $expected)
@@ -268,7 +268,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      * @param int $expected Number of messages expected
      */
     public function dontSeeQueueHasCurrentCount($queue, $expected)
@@ -285,7 +285,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      * @param int $expected Number of messages expected
      */
     public function seeQueueHasTotalCount($queue, $expected)
@@ -302,7 +302,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      * @param int $expected Number of messages expected
      */
     public function dontSeeQueueHasTotalCount($queue, $expected)
@@ -322,7 +322,7 @@ class Queue extends CodeceptionModule
      * ```
      *
      * @param string $message Message Body
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function addMessageToQueue($message, $queue)
     {
@@ -338,7 +338,7 @@ class Queue extends CodeceptionModule
      * ?>
      * ```
      *
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function clearQueue($queue)
     {
@@ -371,7 +371,7 @@ class Queue extends CodeceptionModule
      *     $I->grabQueueCurrentCount('default');
      * ?>
      * ```
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      *
      * @return int Count
      */

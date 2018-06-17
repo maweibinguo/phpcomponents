@@ -43,7 +43,8 @@ class AckMqController extends MqController
     {
         echo " [x] Received ", $message->body, "\n";
 
-        $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+        $message->delivery_info['channel']->basic_reject($message->delivery_info['delivery_tag'], false);
+        //$message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
     }
 
     /**

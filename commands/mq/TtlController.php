@@ -27,7 +27,7 @@ class TtlController extends MqController
                                             $type = 'direct',
                                             $passive = false,
                                             $durable = false,
-                                            $auto_delete = true,
+                                            $auto_delete = false,
                                             $internal = false,
                                             $nowait = false,
                                             $arguments = null,
@@ -41,7 +41,7 @@ class TtlController extends MqController
             $type = 'direct',
             $passive = false,
             $durable = false,
-            $auto_delete = true,
+            $auto_delete = false,
             $internal = false,
             $nowait = false,
             $arguments = null,
@@ -61,7 +61,7 @@ class TtlController extends MqController
                                         $passive = false,
                                         $durable = false,
                                         $exclusive = false,
-                                        $auto_delete = true,
+                                        $auto_delete = false,
                                         $nowait = false,
                                         $arguments = $table,
                                         $ticket = null
@@ -73,7 +73,7 @@ class TtlController extends MqController
                                         $passive = false,
                                         $durable = false,
                                         $exclusive = false,
-                                        $auto_delete = true,
+                                        $auto_delete = false,
                                         $nowait = false,
                                         $arguments = null,
                                         $ticket = null
@@ -91,7 +91,7 @@ class TtlController extends MqController
         //绑定业务交换机和业务队列
         static::$channel->queue_bind(   $queue = $queue_name,
                                         $exchange = $business_exchange,
-                                        $routing_key = $queue_name . 'ppp',
+                                        $routing_key = $queue_name,
                                         $nowait = false,
                                         $arguments = null,
                                         $ticket = null  );
@@ -109,5 +109,78 @@ class TtlController extends MqController
                                         $immediate = false,
                                         $ticket = null
                                         );
+    }
+
+    /**
+     * 拉取消费
+     */
+    public function actionPull()
+    {
+        /**
+         * 声明交换机
+         */
+        static::$channel->exchange_declare(
+            $exchange = 'business_exchange',
+            $type = 'direct',
+            $passive = false,
+            $durable = false,
+            $auto_delete = false,
+            $internal = false,
+            $nowait = false,
+            $arguments = null,
+            $ticket = null
+        );
+
+        //声明真正要消费的队列
+        static::$channel->queue_declare(
+            $queue = 'business_queue',
+            $passive = false,
+            $durable = false,
+            $exclusive = false,
+            $auto_delete = false,
+            $nowait = false,
+            $arguments = null,
+            $ticket = null
+        );
+
+        /**
+         * 将交换机同队列进行绑定,并决定routing_key
+         */
+        static::$channel->queue_bind(
+            $queue = 'business_queue',
+            $exchange = 'business_exchange',
+            $routing_key = 'business_queue',
+            $nowait = false,
+            $arguments = null,
+            $ticket = null
+        );
+
+        static::$channel->basic_consume(
+            $queue = 'business_queue',
+            $consumer_tag = '',
+            $no_local = false,
+            $no_ack = true,
+            $exclusive = false,
+            $nowait = false,
+            $callback = [$this, 'directCallBack'],
+            $ticket = null,
+            $arguments = array()
+        );
+
+        while(count(static::$channel->callbacks)) {
+            //这里才是真正会阻塞的地方
+            static::$channel->wait();
+        }
+
+    }
+
+    /**
+     * 直连队列回调
+     */
+    public function directCallBack($message)
+    {
+        sleep(60);
+        $obj = unserialize($message->body);
+        var_dump($obj);
     }
 }

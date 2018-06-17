@@ -15,7 +15,7 @@ interface Queue
      * Post/Put a message on to the queue server
      *
      * @param string $message Message Body to be send
-     * @param string $queue Queue Name
+     * @param string $queue QueueFactory Name
      */
     public function addMessageToQueue($message, $queue);
 
