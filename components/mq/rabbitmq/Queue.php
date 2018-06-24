@@ -10,10 +10,10 @@ namespace app\components\mq\rabbitmq;
 
 use PhpAmqpLib\Wire\AMQPTable;
 
-class QueueFactory
+class Queue
 {
     use Channel;
-    use DeadLetterExchange;
+    use DeadLetter;
 
     /**
      * 设置队列属性
@@ -30,14 +30,17 @@ class QueueFactory
     ];
 
     /**
-     * 队列工厂实例
-     */
-    public static $instance;
-
-    /**
      * 队列实例
      */
-    public static $queue_instances = [];
+    public static $instances = [];
+
+    /**
+     * 构造函数
+     */
+    public function __construct(string $name)
+    {
+        $this->setQueue($name);
+    }
 
     /**
      * 获取队列名称
@@ -87,13 +90,8 @@ class QueueFactory
     /**
      * 创建队列
      */
-    public function createQueue()
+    public function declare()
     {
-        $hash = md5(serialize($this->_queue_property));
-        if (isset(static::$queue_instances[$hash])) {
-            return true;
-        }
-
         /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
         $channel = static::getChannel();
         $channel->queue_declare(
@@ -106,34 +104,31 @@ class QueueFactory
             $this->_queue_property['arguments'],
             $this->_queue_property['ticket']
         );
-        static::$queue_instances[$hash] = $this->_queue_property['queue'];
-        return true;
     }
 
     /**
      * 创建延迟队列
      */
-    public function createDelayQueue(string $queue, string $exchange, string $routing_key, int $delay_seconds = 5)
+    public function declareDelay(string $exchange, string $routing_key, int $delay_seconds = 5)
     {
         $table = new AMQPTable();
-        $table->set('x-dead-letter-routing-key', $routing_key);
         $table->set('x-dead-letter-exchange', $exchange);
-        $table->set('x-message-ttl', $delay_seconds);
+        $table->set('x-dead-letter-routing-key', $routing_key);
+        $table->set('x-message-ttl', $delay_seconds * 1000);
         $this->setArguments($table)
-            ->setQueue($queue)
-            ->createQueue();
+            ->declare();
     }
 
     /**
-     * 获取工厂对象
+     * 获取实例
      */
-    public static function getInstance(bool $is_reuse = false)
+    public static function getInstance(string $name)
     {
-        if (static::$instance instanceof self && $is_reuse === true) {
-            return static::$instance;
+        if (isset(static::$instances[$name]) && static::$instances[$name] instanceof static) {
+            return static::$instances[$name];
         } else {
-            static::$instance = new static();
-            return static::$instance;
+            static::$instances[$name] = new static($name);
+            return static::$instances[$name];
         }
     }
 }

@@ -22,7 +22,7 @@ class Beanstalk implements Queue
      * Post/Put a message on to the queue server
      *
      * @param string $message Message Body to be send
-     * @param string $queue QueueFactory Name
+     * @param string $queue Queue Name
      */
     public function addMessageToQueue($message, $queue)
     {

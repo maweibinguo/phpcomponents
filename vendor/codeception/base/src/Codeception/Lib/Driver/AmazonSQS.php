@@ -39,7 +39,7 @@ class AmazonSQS implements Queue
      * Post/Put a message on to the queue server
      *
      * @param string $message Message Body to be send
-     * @param string $queue QueueFactory Name
+     * @param string $queue Queue Name
      */
     public function addMessageToQueue($message, $queue)
     {
@@ -118,7 +118,7 @@ class AmazonSQS implements Queue
      *
      * @param $queue Queue Name
      *
-     * @return string QueueFactory URL
+     * @return string Queue URL
      */
     private function getQueueURL($queue)
     {

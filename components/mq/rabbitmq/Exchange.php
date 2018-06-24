@@ -8,7 +8,7 @@
 
 namespace app\components\mq\rabbitmq;
 
-class ExchangeFactory
+class Exchange
 {
     use Channel;
 
@@ -44,12 +44,15 @@ class ExchangeFactory
     /**
      * 交换机工厂实例对象
      */
-    public static $instance;
+    public static $instances = [];
 
     /**
-     * 交换机实例对象
+     * 构造函数
      */
-    public static $exchange_instances = [];
+    private function __construct(string $name)
+    {
+        $this->setExchangeName($name);
+    }
 
     /**
      * 获取交换机类型
@@ -91,13 +94,8 @@ class ExchangeFactory
     /**
      * 获取交换机实例
      */
-    public function createExchange()
+    public function declare()
     {
-        $hash = md5(serialize($this->_exchange_property));
-        if (isset(static::$exchange_instances[$hash])) {
-            return true;
-        }
-
         /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
         $channel = static::getChannel();
         $channel->exchange_declare(
@@ -111,8 +109,6 @@ class ExchangeFactory
             $this->_exchange_property['arguments'],
             $this->_exchange_property['ticket']
         );
-        static::$exchange_instances[$hash] = $this->_exchange_property['exchange'];
-        return true;
     }
 
     /**
@@ -121,8 +117,8 @@ class ExchangeFactory
     public function createDelayExchange()
     {
         $this->setExchangeType(self::DIRECT_TYPE)
-            ->setExchangeName(DeadLetterExchange::$dead_letter_exchange_name)
-            ->createExchange();
+            ->setExchangeName(DeadLetter::$dead_letter_exchange_name)
+            ->declare();
     }
 
     /**
@@ -132,19 +128,19 @@ class ExchangeFactory
     {
         $this->setExchangeType(self::DIRECT_TYPE)
             ->setExchangeName(self::DEFAULT_DIRECT_EXCHANGE)
-            ->createExchange();
+            ->declare();
     }
 
     /**
-     * 获取交换机工厂实例
+     * 获取实例
      */
-    public static function getInstance($is_reuse = false)
+    public static function getInstance(string $name)
     {
-        if (static::$instance instanceof self && $is_reuse === true) {
-            return static::$instance;
+        if (isset(static::$instances[$name]) && static::$instances[$name] instanceof static) {
+            return static::$instances[$name];
         } else {
-            static::$instance = new static();
-            return static::$instance;
+            static::$instances[$name] = new static($name);
+            return static::$instances[$name];
         }
     }
 }

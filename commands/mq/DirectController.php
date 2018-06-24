@@ -22,7 +22,7 @@ class DirectController extends MqController
          */
         static::$channel->exchange_declare(
             $exchange = 'direct_exchange',
-            $type = 'direct',
+            $type = 'fanout',
             $passive = false,
             $durable = false,
             $auto_delete = true,

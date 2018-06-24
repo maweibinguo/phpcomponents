@@ -39,14 +39,10 @@ class FanoutController extends MqController
      */
     public function actionFanoutReceive()
     {
-        //声明直连交换机
-        static::$channel->exchange_declare($name = $this->exchange_name, $type = 'fanout', $passive = false, $durable = false, $auto_delete = false);
-
         //声明队列
         $queue_name_list = [
             'fanout_queue_one',
             'fanout_queue_two',
-            'fanout_queue_three'
         ];
         foreach ($queue_name_list as $queue_name) {
             static::$channel->queue_declare($queue_name, false, $isdurable = false, false, false);
@@ -69,6 +65,34 @@ class FanoutController extends MqController
      */
     public function callBack($msg)
     {
+        echo " [x] Received ", $msg->delivery_info['routing_key'] . '[x]' . $msg->body, "\n";
+    }
+
+    public function actionFanoutTest()
+    {
+        //声明队列
+        $queue_name_list = [
+            'fanout_queue_three',
+        ];
+        foreach ($queue_name_list as $queue_name) {
+            static::$channel->queue_declare($queue_name, false, $isdurable = false, false, false);
+
+            //绑定队列与交换机
+            static::$channel->queue_bind($queue_name, $exchange = $this->exchange_name);
+
+            //basic_consume is not blocked
+            static::$channel->basic_consume($queue_name, '', false, false, false, false, [$this, 'callme']);
+        }
+
+        //callbacks is block
+        while (count(static::$channel->callbacks)) {
+            static::$channel->wait();
+        }
+    }
+
+    public function callme($msg)
+    {
+        //$msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
         echo " [x] Received ", $msg->delivery_info['routing_key'] . '[x]' . $msg->body, "\n";
     }
 

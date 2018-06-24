@@ -48,7 +48,7 @@ module.exports = function (grunt) {
     jqueryCheck: configBridge.config.jqueryCheck.join('\n'),
     jqueryVersionCheck: configBridge.config.jqueryVersionCheck.join('\n'),
 
-    // TaskFactory configuration.
+    // Task configuration.
     clean: {
       dist: 'dist',
       docs: 'docs/dist'

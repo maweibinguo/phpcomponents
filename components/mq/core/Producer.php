@@ -8,19 +8,18 @@
 
 namespace app\components\mq\core;
 
-use app\components\mq\rabbitmq\BindingFactory;
-use app\components\mq\rabbitmq\DeadLetterExchange;
-use app\components\mq\rabbitmq\ExchangeFactory;
-use app\components\mq\rabbitmq\QueueFactory;
-use app\components\mq\rabbitmq\TaskFactory;
+use app\components\mq\rabbitmq\Binding;
+use app\components\mq\rabbitmq\DeadLetter;
+use app\components\mq\rabbitmq\Exchange;
+use app\components\mq\rabbitmq\Queue;
+use app\components\mq\rabbitmq\Task;
 use PhpAmqpLib\Exception\AMQPInvalidArgumentException;
-use PhpAmqpLib\Wire\AMQPTable;
 
 class Producer
 {
     use \app\components\mq\rabbitmq\Channel;
 
-    use \app\components\mq\rabbitmq\DeadLetterExchange;
+    use \app\components\mq\rabbitmq\DeadLetter;
 
     /**
      * 发布消息的属性
@@ -70,189 +69,68 @@ class Producer
         return $this;
     }
 
-    /**
-     * 发布延迟数据
-     */
-    public function publishDelay(string $msg = '', string $queue = '', int $delay_seconds = 5)
+    public function publishDelay(string $msg = '', int $delay_seconds, string $queue = '', string $exchange = '', string $delay_exchange = '', string $routing_key = '')
     {
         try {
-            /* 校验参数 */
             if (empty($msg)) {
                 throw new AMQPInvalidArgumentException('msg is empty');
             } else {
                 $this->setMsg($msg);
+                $amqp_msg = (new Task($msg))->getAMQPMsg();
             }
+
+            if($delay_seconds <= 0) {
+                throw new AMQPInvalidArgumentException(sprintf('%s delay_seconds is wrong', $delay_seconds));
+            }
+
             if (empty($queue)) {
                 throw new AMQPInvalidArgumentException('queue is empty');
-            }
-            if ($delay_seconds <= 0) {
-                throw new AMQPInvalidArgumentException(sprintf("can't handle delay_seconds:%s", $delay_seconds));
             } else {
-                $delay_seconds = $delay_seconds * 1000;
+                Queue::getInstance($queue)->declare();
+                $delay_queue = DeadLetter::getDelayQueueName($queue, $delay_seconds);
+                Queue::getInstance($delay_queue)->declareDelay($exchange, $routing_key, $delay_seconds);
             }
-            $delay_queue = sprintf("delay:%s:%s", $queue, $delay_seconds);
 
-            /* 创建死信交换机 */
-            ExchangeFactory::getInstance()->createDelayExchange();
+            if (empty($routing_key)) {
+                $routing_key = $queue;
+                $this->setRoutingKey($routing_key);
+            } else {
+                $this->setRoutingKey($routing_key);
+            }
 
-            /* 创建业务交换机 */
-            ExchangeFactory::getInstance()->createDefaultDirectExchange();
+            if (empty($exchange)) {
+                throw new AMQPInvalidArgumentException('exchange is empty');
+            } else {
+                Exchange::getInstance($exchange)->declare();
+                //延迟交换机
+                $delay_exchange = DeadLetter::getDelayExchangeName($exchange);
+            }
 
-            /* 创建延迟队列*/
-            QueueFactory::getInstance()->createDelayQueue($delay_queue, ExchangeFactory::DEFAULT_DIRECT_EXCHANGE, $queue, $delay_seconds);
+                Exchange::getInstance(DeadLetter::$dead_letter_exchange_name)->declare();
+                Queue::getInstance($queue)->declareDelay($exchange, $routing_key, $delay_seconds);
+                Binding::getInstance($queue, $exchange, $routing_key)->bind();
+                $this->setExchange(DeadLetter::$dead_letter_exchange_name);
 
-            /* 创建业务队列 */
-            QueueFactory::getInstance()->setQueue($queue)
-                ->createQueue();
+            /* 声明业务交换机 */
+            Exchange::getInstance($exchange)
+                ->setExchangeType(Exchange::DIRECT_TYPE)
+                ->declare();
 
-            /* 绑定延迟交换机和延迟队列 */
-            BindingFactory::getInstance()->setExchange(DeadLetterExchange::$dead_letter_exchange_name)
-                ->setQueue($delay_queue)
-                ->setRoutingKey($delay_queue)
-                ->bind();
-
-            /* 绑定业务交换机和业务队列 */
-            BindingFactory::getInstance()->setExchange(ExchangeFactory::DEFAULT_DIRECT_EXCHANGE)
-                ->setQueue($queue)
-                ->setRoutingKey($queue)
-                ->bind();
-
-            /* 创建消息 */
-            $task_factory = new TaskFactory();
-            $task = $task_factory->createTask($this->_publish_property['msg']);
+            /* 绑定 */
+            Binding::getInstance($queue, $exchange, $routing_key)->bind();
 
             /* 发布消息 */
             /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
             $channel = static::getChannel();
-            $this->setRoutingKey($delay_queue);
-            $this->setExchange(DeadLetterExchange::$dead_letter_exchange_name);
-            $result = $channel->basic_publish(
-                $task,
+            $channel->basic_publish(
+                $amqp_msg,
                 $this->_publish_property['exchange'],
                 $this->_publish_property['routing_key'],
                 $this->_publish_property['mandatory'],
                 $this->_publish_property['immediate'],
                 $this->_publish_property['ticket']
             );
-            return true;
-        } catch (\Exception $e) {
-            var_dump($e->getLine(), $e->getFile(), $e->getMessage());
-            die();
-            return false;
-        }
-    }
-
-    /**
-     * 发布数据
-     */
-    public function publishDirect(string $msg = '', string $queue = '', string $exchange = ExchangeFactory::DEFAULT_DIRECT_EXCHANGE)
-    {
-        try {
-            /* 校验参数 */
-            if (empty($msg)) {
-                throw new AMQPInvalidArgumentException('msg is empty');
-            } else {
-                $this->setMsg($msg);
-            }
-            if (empty($queue)) {
-                throw new AMQPInvalidArgumentException('queue is empty');
-            } else {
-                $this->setRoutingKey($queue);
-            }
-
-            $this->setExchange($exchange);
-
-            /* 创建直连交换机 */
-            ExchangeFactory::getInstance()->setExchangeName($exchange)
-                ->setExchangeType(ExchangeFactory::DIRECT_TYPE)
-                ->createExchange();
-
-            /* 创建队列 */
-            QueueFactory::getInstance()->setQueue($queue)
-                ->createQueue();
-
-            /* 绑定交换机和队列 */
-            BindingFactory::getInstance()->setExchange($exchange)
-                ->setQueue($queue)
-                ->setRoutingKey($queue)
-                ->bind();
-
-            /* 创建消息 */
-            $task_factory = new TaskFactory();
-            $task = $task_factory->createTask($this->_publish_property['msg']);
-
-            /* 发布消息 */
-            /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
-            $channel = static::getChannel();
-            $result = $channel->basic_publish(
-                $task,
-                $this->_publish_property['exchange'],
-                $this->_publish_property['routing_key'],
-                $this->_publish_property['mandatory'],
-                $this->_publish_property['immediate'],
-                $this->_publish_property['ticket']
-            );
-            return true;
-        } catch (\Exception $e) {
-            var_dump($e->getLine(), $e->getFile(), $e->getMessage());
-            die();
-            return false;
-        }
-    }
-
-    /**
-     * 发布数据
-     */
-    public function publishTopic(string $msg, string $queue, string $binding_key, string $exchange = ExchangeFactory::DEFAULT_TOPIC_EXCHANGE)
-    {
-        try {
-            /* 校验参数 */
-            if (empty($msg)) {
-                throw new AMQPInvalidArgumentException('msg is empty');
-            } else {
-                $this->setMsg($msg);
-            }
-            if (empty($queue)) {
-                throw new AMQPInvalidArgumentException('queue is empty');
-            } else {
-                $this->setRoutingKey($queue);
-            }
-            if(empty($binding_key)) {
-                throw new AMQPInvalidArgumentException('binding_key is empty');
-            }
-
-            $this->setExchange($exchange);
-
-            /* 创建广播交换机 */
-            ExchangeFactory::getInstance()->setExchangeName($exchange)
-                ->setExchangeType(ExchangeFactory::FANOUT_TYPE)
-                ->createExchange();
-
-            /* 创建队列 */
-            QueueFactory::getInstance()->setQueue($queue)
-                ->createQueue();
-
-            /* 绑定交换机和队列 */
-            BindingFactory::getInstance()->setExchange($exchange)
-                ->setQueue($queue)
-                ->setRoutingKey($binding_key)
-                ->bind();
-
-            /* 创建消息 */
-            $task_factory = new TaskFactory();
-            $task = $task_factory->createTask($this->_publish_property['msg']);
-
-            /* 发布消息 */
-            /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
-            $channel = static::getChannel();
-            $result = $channel->basic_publish(
-                $task,
-                $this->_publish_property['exchange'],
-                $this->_publish_property['routing_key'],
-                $this->_publish_property['mandatory'],
-                $this->_publish_property['immediate'],
-                $this->_publish_property['ticket']
-            );
+            echo "message had send\r\n";
             return true;
         } catch (\Exception $e) {
             var_dump($e->getLine(), $e->getFile(), $e->getMessage());
@@ -265,7 +143,71 @@ class Producer
     /**
      * 发布数据
      */
-    public function publishFanout(string $msg, string $queue, string $exchange = ExchangeFactory::DEFAULT_FANOUT_EXCHANGE)
+    public function publishDirect(string $msg = '', string $queue = '', string $routing_key = '', int $delay_seconds = 0, string $exchange = Exchange::DEFAULT_DIRECT_EXCHANGE)
+    {
+        try {
+
+            if (empty($msg)) {
+                throw new AMQPInvalidArgumentException('msg is empty');
+            } else {
+                $this->setMsg($msg);
+                $amqp_msg = (new Task($msg))->getAMQPMsg();
+            }
+
+            if (empty($queue)) {
+                throw new AMQPInvalidArgumentException('queue is empty');
+            } else {
+                Queue::getInstance($queue)->declare();
+            }
+
+            if (empty($routing_key)) {
+                $routing_key = $queue;
+                $this->setRoutingKey($routing_key);
+            } else {
+                $this->setRoutingKey($routing_key);
+            }
+
+            if ($delay_seconds > 0) {
+                Exchange::getInstance(DeadLetter::$dead_letter_exchange_name)->declare();
+                Queue::getInstance($queue)->declareDelay($exchange, $routing_key, $delay_seconds);
+                Binding::getInstance($queue, $exchange, $routing_key)->bind();
+                $this->setExchange(DeadLetter::$dead_letter_exchange_name);
+            } else {
+                $this->setExchange($exchange);
+            }
+
+            /* 声明业务交换机 */
+            Exchange::getInstance($exchange)
+                ->setExchangeType(Exchange::DIRECT_TYPE)
+                ->declare();
+
+            /* 绑定 */
+            Binding::getInstance($queue, $exchange, $routing_key)->bind();
+
+            /* 发布消息 */
+            /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
+            $channel = static::getChannel();
+            $channel->basic_publish(
+                $amqp_msg,
+                $this->_publish_property['exchange'],
+                $this->_publish_property['routing_key'],
+                $this->_publish_property['mandatory'],
+                $this->_publish_property['immediate'],
+                $this->_publish_property['ticket']
+            );
+            echo "message had send\r\n";
+            return true;
+        } catch (\Exception $e) {
+            var_dump($e->getLine(), $e->getFile(), $e->getMessage());
+            die();
+            return false;
+        }
+    }
+
+    /**
+     * 发布数据
+     */
+    public function publishTopic(string $msg, string $routing_key, string $exchange = Exchange::DEFAULT_TOPIC_EXCHANGE)
     {
         try {
             /* 校验参数 */
@@ -274,35 +216,70 @@ class Producer
             } else {
                 $this->setMsg($msg);
             }
-            if (empty($queue)) {
-                throw new AMQPInvalidArgumentException('queue is empty');
+            if (empty($routing_key)) {
+                throw new AMQPInvalidArgumentException('routing_key is empty');
+            } else {
+                $this->setRoutingKey($routing_key);
             }
 
             $this->setExchange($exchange);
 
             /* 创建广播交换机 */
-            ExchangeFactory::getInstance()->setExchangeName($exchange)
-                ->setExchangeType(ExchangeFactory::FANOUT_TYPE)
+            Exchange::getInstance($exchange)
+                ->setExchangeType(Exchange::FANOUT_TYPE)
                 ->createExchange();
 
-            /* 创建队列 */
-            QueueFactory::getInstance()->setQueue($queue)
-                ->createQueue();
-
-            /* 绑定交换机和队列 */
-            BindingFactory::getInstance()->setExchange($exchange)
-                ->setQueue($queue)
-                ->bind();
-
             /* 创建消息 */
-            $task_factory = new TaskFactory();
-            $task = $task_factory->createTask($this->_publish_property['msg']);
+            $amqp_msg = (new Task($msg))->getAMQPMsg();
 
             /* 发布消息 */
             /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
             $channel = static::getChannel();
-            $result = $channel->basic_publish(
-                $task,
+            $channel->basic_publish(
+                $amqp_msg,
+                $this->_publish_property['exchange'],
+                $this->_publish_property['routing_key'],
+                $this->_publish_property['mandatory'],
+                $this->_publish_property['immediate'],
+                $this->_publish_property['ticket']
+            );
+            return true;
+        } catch (\Exception $e) {
+            var_dump($e->getLine(), $e->getFile(), $e->getMessage());
+            die();
+            return false;
+        }
+
+    }
+
+    /**
+     * 发布数据
+     */
+    public function publishFanout(string $msg, string $exchange = Exchange::DEFAULT_FANOUT_EXCHANGE)
+    {
+        try {
+            /* 校验参数 */
+            if (empty($msg)) {
+                throw new AMQPInvalidArgumentException('msg is empty');
+            } else {
+                $this->setMsg($msg);
+            }
+
+            $this->setExchange($exchange);
+
+            /* 创建广播交换机 */
+            Exchange::getInstance($exchange)
+                ->setExchangeType(Exchange::FANOUT_TYPE)
+                ->createExchange();
+
+            /* 创建消息 */
+            $amqp_msg = (new Task($msg))->getAMQPMsg();
+
+            /* 发布消息 */
+            /* @var $channel \PhpAmqpLib\Channel\AMQPChannel */
+            $channel = static::getChannel();
+            $channel->basic_publish(
+                $amqp_msg,
                 $this->_publish_property['exchange'],
                 $this->_publish_property['routing_key'],
                 $this->_publish_property['mandatory'],
@@ -318,3 +295,12 @@ class Producer
 
     }
 }
+
+============================== 分支=======================================
+master_protocol_1027_20180514（已合并master）
+
+============================= 定时任务 ===================================
+php /var/www/protocol/xinhehui_protocol/cli/cli.php  command\\flx-supplement supply
+
+============================= sql  ===================================
+需要将xhh主站的xlb_join_user 表复制一份到签章系统

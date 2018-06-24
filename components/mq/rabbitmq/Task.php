@@ -10,15 +10,33 @@ namespace app\components\mq\rabbitmq;
 
 use PhpAmqpLib\Message\AMQPMessage;
 
-class TaskFactory
+class Task
 {
     use Channel;
-    use DeadLetterExchange;
+    use DeadLetter;
+
+    private $msg = '';
 
     private $_task_property = [
         'content_type' => 'text/plain',
         'priority' => 'octet',
     ];
+
+    /**
+     * 构造函数
+     */
+    public function __construct(string $msg)
+    {
+        $this->msg = trim($msg);
+    }
+
+    /**
+     * 获取消息体
+     */
+    public function getMsg()
+    {
+        return $this->msg;
+    }
 
     /**
      * 设置消息体格式
@@ -41,7 +59,7 @@ class TaskFactory
     /**
      * 是指rpc请求标志
      */
-    public function setCorrelationId(string $unique_id)
+    protected function setCorrelationId(string $unique_id)
     {
         $this->_task_property['correlation_id'] = $unique_id;
         return $this;
@@ -69,9 +87,9 @@ class TaskFactory
     /**
      * 创建消息
      */
-    public function createTask(string $pay_load)
+    public function getAMQPMsg()
     {
-        $amqp_message = new AMQPMessage($pay_load, $this->_task_property);
+        $amqp_message = new AMQPMessage($this->msg, $this->_task_property);
         return $amqp_message;
     }
 }
